@@ -4,6 +4,7 @@ import HomePage from './features/Home/HomePage';
 import InsumosPage from './features/Insumos/InsumosPage';
 import SideBar from './components/SideBar';  // Importa o componente SideBar
 import './App.css';  // Importa o CSS global
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const App: React.FC = () => {
   return (

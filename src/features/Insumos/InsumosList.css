@@ -24,8 +24,12 @@
 
 .insumos-table tr:nth-child(even) {
   background-color: #f2f2f2;
+  
 }
-
+tr{
+  max-height: 1rem !important;
+  height: 1rem !important;
+}
 .insumos-table tr:hover {
   background-color: #ddd;
 }

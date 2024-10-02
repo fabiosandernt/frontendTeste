@@ -1,6 +1,6 @@
 import React from 'react';
 import './Pagination.css'; // Estilos para a paginação (opcional)
-
+import 'bootstrap/dist/css/bootstrap.min.css';
 interface PaginationProps {
   currentPage: number;
   totalPages: number;

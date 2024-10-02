@@ -1,51 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import './SideBar.css';  // Importa os estilos da SideBar
 
 const SideBar: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(true); // A sidebar estará aberta por padrão em telas grandes
-
-  // Função para alternar a sidebar
-  const toggleSidebar = () => setIsOpen(!isOpen);
-
-  // Verifica o tamanho da tela para manter a sidebar aberta em telas grandes
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 768) {
-        setIsOpen(true); // Sidebar sempre aberta em telas maiores
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    handleResize(); // Chama a função quando o componente é montado
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+  const [isConfigOpen, setIsConfigOpen] = useState(true);
 
   return (
-    <>
-      {/* Botão para abrir/fechar a sidebar em telas menores */}
-      <button className="menu-toggle" onClick={toggleSidebar}>
-        ☰
-      </button>
-
-      {/* Sidebar, mostra ou esconde baseado no estado */}
-      <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
-        <h2>Navegação</h2>
-        <ul>
-          <li>
-            <strong>Configuração</strong>
-            <ul>
-              <li><Link to="/insumos">Insumos</Link></li>
-              <li><Link to="/gabarito">Gabarito</Link></li>
-              <li><Link to="/pmo">PMO</Link></li>
+    <div className="d-flex flex-column flex-shrink-0 p-3 text-white" style={{ width: '280px', height: '100vh', position: 'fixed', background: '#1C3A57' }}>
+      <a href="/" className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+        <span className="fs-5">Configuração</span>
+      </a>
+      <hr />
+      <ul className="nav nav-pills flex-column mb-auto">
+        {/* Configuração Section */}
+        <li className="nav-item mb-1">
+          <button
+            className="btn btn-toggle align-items-center rounded collapsed text-white"
+            data-bs-toggle="collapse"
+            data-bs-target="#config-collapse"
+            aria-expanded={isConfigOpen}
+            onClick={() => setIsConfigOpen(!isConfigOpen)}
+          >
+            Configuração
+          </button>
+          <div className={`collapse ${isConfigOpen ? 'show' : ''}`} id="config-collapse">
+            <ul className="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+              <li><Link to="/insumos" className="link-light rounded">Insumos</Link></li>
+              <li><Link to="/gabarito" className="link-light rounded">Gabarito</Link></li>
+              <li><Link to="/pmo" className="link-light rounded">PMO</Link></li>
             </ul>
-          </li>
-        </ul>
-      </div>
-    </>
+          </div>
+        </li>
+      </ul>
+    </div>
   );
 };
 

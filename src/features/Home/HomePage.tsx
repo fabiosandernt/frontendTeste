@@ -1,5 +1,6 @@
 import React from 'react';
 import './HomePage.css';  // Estilos para a HomePage
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const HomePage: React.FC = () => {
   return (
