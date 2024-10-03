@@ -1,12 +1,18 @@
 import React from 'react';
-import InsumosList from './InsumosList';  // Importa o componente que lista os insumos
-import 'bootstrap/dist/css/bootstrap.min.css';
+import InsumosList from './InsumosList';
+import { Layout, Typography } from 'antd';
+
+const { Content } = Layout;
+const { Title } = Typography;
+
 const InsumosPage: React.FC = () => {
   return (
-    <div>
-      <h1>Insumos</h1>
-      <InsumosList />
-    </div>
+    <Layout>
+      <Content >
+        <Title level={2}>Insumos</Title>
+        <InsumosList />
+      </Content>
+    </Layout>
   );
 };
 

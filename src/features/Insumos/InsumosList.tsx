@@ -1,30 +1,28 @@
-import React, { useState } from 'react';
-import { fetchInsumos } from '../../services/InsumoService';
-import { InsumoDto } from '../../models/InsumoDto';
-import Button from '../../components/Button'; // Importa o botão reutilizável
-import Pagination from '../../components/Pagination'; // Importa o componente de paginação
-import './InsumosList.css'; // Estilos para a tabela
+import React, { useState, useEffect } from 'react';
+import { Table, Button, Pagination, Input, Space, Row, Col } from 'antd'; // Importando componentes do Ant Design
+import { fetchInsumos } from '../../services/InsumoService'; // Função para buscar insumos
+import { InsumoDto } from '../../models/InsumoDto'; // Modelo do DTO
 
 const InsumosList: React.FC = () => {
-  const [insumos, setInsumos] = useState<InsumoDto[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [insumos, setInsumos] = useState<InsumoDto[]>([]); // Lista de insumos
+  const [loading, setLoading] = useState(false); // Estado de loading
   const [filters, setFilters] = useState({
     NomInsumopmo: '',
     SglInsumo: '',
     TipInsumopmo: '',
-    Limit: 10, // Limite de itens por página
-    Offset: 0, // Paginação inicial
+    Limit: 10, // Limite por página
+    Offset: 0, // Página inicial
     Sort: '',
   });
   const [totalCount, setTotalCount] = useState(0); // Total de itens retornados pela API
   const [currentPage, setCurrentPage] = useState(1); // Página atual
 
-  // Função chamada ao clicar no botão "Buscar"
+  // Função para buscar os insumos filtrados
   const fetchFilteredInsumos = () => {
     setLoading(true);
     fetchInsumos(filters).then(data => {
-      setInsumos(data); // A API retorna diretamente os itens
-      setTotalCount(100); // Defina um total fictício ou ajustável
+      setInsumos(data); // Atualiza a lista de insumos com os dados
+      setTotalCount(100); // Definir um valor fictício (ou ajustar baseado nos dados)
       setLoading(false);
     }).catch(error => {
       console.error("Erro ao buscar insumos:", error);
@@ -32,16 +30,20 @@ const InsumosList: React.FC = () => {
     });
   };
 
+  useEffect(() => {
+    fetchFilteredInsumos(); // Buscar os insumos ao carregar o componente
+  }, [filters]); // Dependências para buscar novamente ao mudar os filtros
+
   // Função para editar um insumo
   const handleEdit = (id: number) => {
     console.log(`Editar insumo com ID: ${id}`);
-    // Aqui você pode redirecionar para uma página de edição ou abrir um modal de edição
+    // Aqui você pode redirecionar ou abrir um modal de edição
   };
 
   // Função para excluir um insumo
   const handleDelete = (id: number) => {
     console.log(`Excluir insumo com ID: ${id}`);
-    // Aqui você pode chamar a função de exclusão da API
+    // Aqui você pode chamar a função para remover o item
   };
 
   // Função para atualizar os filtros
@@ -50,103 +52,105 @@ const InsumosList: React.FC = () => {
     setFilters(prevFilters => ({ ...prevFilters, [name]: value }));
   };
 
-  // Função chamada ao clicar no botão de buscar
-  const handleClick = () => {
-    setFilters({ ...filters, Offset: 0 }); // Reiniciar Offset ao aplicar filtro
-    setCurrentPage(1); // Reiniciar a paginação ao buscar
-    fetchFilteredInsumos(); // Chama a função para buscar os insumos com os filtros
-  };
-
-  // Função para mudar de página
+  // Função para mudar a página na paginação
   const handlePageChange = (newPage: number) => {
-    const newOffset = (newPage - 1) * filters.Limit; // Calcula o offset com base na nova página
+    const newOffset = (newPage - 1) * filters.Limit; // Calcular o offset com base na nova página
     setFilters(prevFilters => ({ ...prevFilters, Offset: newOffset }));
-    setCurrentPage(newPage); // Atualiza a página atual
-    fetchFilteredInsumos(); // Faz a requisição para a nova página
+    setCurrentPage(newPage); // Atualizar a página atual
   };
 
-  // Calcular o total de páginas
-  const totalPages = Math.ceil(totalCount / filters.Limit);
+  // Definição das colunas para a tabela Ant Design
+  const columns = [
+    { title: 'Ordem', dataIndex: 'numOrdemexibicao', key: 'numOrdemexibicao' },
+    { title: 'Tipo', dataIndex: 'tipInsumopmo', key: 'tipInsumopmo', render: (text: string) => (text === 'E' ? 'Estruturado' : 'Não Estruturado') },
+    { title: 'Nome', dataIndex: 'nomInsumopmo', key: 'nomInsumopmo' },
+    { title: 'Sigla', dataIndex: 'sglInsumo', key: 'sglInsumo' },
+    { title: 'Exportar', dataIndex: 'flgExportainsumo', key: 'flgExportainsumo', render: (flag: boolean) => (flag ? 'Sim' : 'Não') },
+    { title: 'Pré-aprovado', dataIndex: 'flgPreaprovado', key: 'flgPreaprovado', render: (flag: boolean) => (flag ? 'Sim' : 'Não') },
+    { title: 'Ativo', dataIndex: 'flgAtivo', key: 'flgAtivo', render: (flag: boolean) => (flag ? 'Sim' : 'Não') },
+    {
+      title: 'Ações',
+      key: 'actions',
+      render: (text: any, record: InsumoDto) => (
+        <Space size="middle">
+          {/* <Button type="primary" onClick={() => handleEdit(record.idInsumopmo)}>Editar</Button>
+          <Button type="primary" danger onClick={() => handleDelete(record.idInsumopmo)}>Excluir</Button> */}
+        <Space size="middle">
+  <Button
+    color="primary"
+    variant="solid"
+    size="small"
+    onClick={() => handleEdit(record.idInsumopmo)}
+  >
+    Editar
+  </Button>
+  <Button
+    color="danger"
+    variant="solid"
+    size="small"
+    onClick={() => handleDelete(record.idInsumopmo)}
+  >
+    Excluir
+  </Button>
+</Space>
 
-  if (loading) {
-    return <p>Carregando insumos...</p>;
-  }
+        </Space>
+      ),
+    },
+  ];
 
   return (
-    <div className="insumos-list-container">
-      <h1>Lista de Insumos</h1>
-
+    <div>
       {/* Filtros */}
-      <form className="filter-form">
-        <div>
-          <label>Nome:</label>
-          <input
-            type="text"
+      <Row gutter={[16, 16]} justify="center">
+        <Col span={6}>
+          <Input
+            placeholder="Nome"
             name="NomInsumopmo"
             value={filters.NomInsumopmo}
             onChange={handleFilterChange}
           />
-        </div>
-        <div>
-          <label>Símbolo:</label>
-          <input
-            type="text"
+        </Col>
+        <Col span={6}>
+          <Input
+            placeholder="Sigla"
             name="SglInsumo"
             value={filters.SglInsumo}
             onChange={handleFilterChange}
           />
-        </div>
-        <div>
-          <label>Tipo:</label>
-          <input
-            type="text"
+        </Col>
+        <Col span={6}>
+          <Input
+            placeholder="Tipo"
             name="TipInsumopmo"
             value={filters.TipInsumopmo}
             onChange={handleFilterChange}
           />
-        </div>
-        <Button label="Buscar" onClick={handleClick} />
-      </form>
+        </Col>
+        <Col span={6}>
+          <Button type="primary" onClick={fetchFilteredInsumos}>Buscar</Button>
+        </Col>
+      </Row>
 
-      {/* Tabela de Insumos */}
-      <table className="insumos-table">
-        <thead>
-          <tr>
-            <th>Ordem</th>
-            <th>Tipo</th>
-            <th>Nome</th>
-            <th>Sigla</th>
-            <th>Exportar</th>
-            <th>Pré-aprovado</th>
-            <th>Ativo</th>
-            <th>Ações</th> {/* Mover a coluna de ações para o final */}
-          </tr>
-        </thead>
-        <tbody>
-          {insumos.map(insumo => (
-            <tr key={insumo.idInsumopmo}>
-              <td>{insumo.numOrdemexibicao}</td>
-              <td>{insumo.tipInsumopmo === 'E' ? 'Estruturado' : 'Não Estruturado'}</td> {/* Ajuste do tipo */}
-              <td>{insumo.nomInsumopmo}</td>
-              <td>{insumo.sglInsumo}</td>
-              <td>{insumo.flgExportainsumo ? 'Sim' : 'Não'}</td>
-              <td>{insumo.flgPreaprovado ? 'Sim' : 'Não'}</td>
-              <td>{insumo.flgAtivo ? 'Sim' : 'Não'}</td>
-              <td>
-                <Button label="Editar" onClick={() => handleEdit(insumo.idInsumopmo)} />
-                <Button label="Excluir" onClick={() => handleDelete(insumo.idInsumopmo)} />
-              </td> {/* Botões de ação no final */}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* Tabela */}
+      <Table
+        dataSource={insumos}
+        columns={columns}
+        rowKey="idInsumopmo"
+        loading={loading}
+        pagination={false}  // Desativamos a paginação padrão
+        style={{ marginTop: '20px' }}
+      />
 
       {/* Paginação */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
+      <Row justify="center" style={{ marginTop: '20px' }}>
+        <Pagination
+          current={currentPage}
+          total={totalCount}
+          pageSize={filters.Limit}
+          onChange={handlePageChange}
+        />
+      </Row>
     </div>
   );
 };
