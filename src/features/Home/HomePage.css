@@ -1,10 +1,21 @@
-.home-container {
-    display: flex;
+/* Estilos para telas grandes */
+@media (min-width: 1024px) {
+  .App-header {
+    padding: 40px;
   }
-  
-  .content {
-    margin-left: 260px;
+}
+.ant-layout-sider-collapsed {
+  background-color: transparent !important;  /* Remover a cor de fundo ao colapsar */
+}
+
+/* Estilos para telas menores */
+@media (max-width: 768px) {
+  .App-header {
     padding: 20px;
-    width: 100%;
+    font-size: 14px;
   }
-  
+
+  .App-logo {
+    height: 30vmin;
+  }
+}

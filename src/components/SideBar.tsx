@@ -7,7 +7,7 @@ const SideBar: React.FC = () => {
   return (
     <Menu
       mode="inline"
-      style={{ width: 256, height: '100vh', backgroundColor: '#1C3A57', color: 'white', position: 'fixed' }}
+      //style={{ width: 256, height: '100vh', backgroundColor: '#1C3A57', color: 'white', position: 'fixed' }}
       theme="dark"
     >
       <Menu.SubMenu key="admin" icon={<ToolOutlined />} title="Administração">

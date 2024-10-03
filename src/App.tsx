@@ -14,12 +14,17 @@ const App: React.FC = () => {
         
         {/* Sidebar Responsivo */}
         <Sider
-          width={240}  // Define a largura da sidebar
-          breakpoint="lg"  // Responsivo para larguras maiores
-          collapsedWidth="0"  // Permite recolher o sidebar em telas menores
-        >
-          <SideBar />
-        </Sider>
+  width={240}
+  collapsible
+  collapsedWidth="0"
+  breakpoint="lg"
+  trigger={null}  // Remove o ícone de colapso automático se necessário
+  //style={{ backgroundColor: '#002766' }}  // Manter a cor de fundo da sidebar
+>
+  <SideBar />
+</Sider>
+
+
 
         {/* Conteúdo Principal */}
         <Layout>

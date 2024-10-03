@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Pagination, Input, Space, Row, Col } from 'antd'; // Importando componentes do Ant Design
+import { Table, Button, Pagination, Input, Space, Row, Col, Select } from 'antd'; // Adicionei o Select do Ant Design
 import { fetchInsumos } from '../../services/InsumoService'; // Função para buscar insumos
 import { InsumoDto } from '../../models/InsumoDto'; // Modelo do DTO
+import './Insumos.css'; // Importa o arquivo de estilo
+
+const { Option } = Select;
 
 const InsumosList: React.FC = () => {
   const [insumos, setInsumos] = useState<InsumoDto[]>([]); // Lista de insumos
@@ -9,7 +12,7 @@ const InsumosList: React.FC = () => {
   const [filters, setFilters] = useState({
     NomInsumopmo: '',
     SglInsumo: '',
-    TipInsumopmo: '',
+    TipInsumopmo: '', // Aqui o valor será 'E' ou 'L'
     Limit: 10, // Limite por página
     Offset: 0, // Página inicial
     Sort: '',
@@ -52,6 +55,11 @@ const InsumosList: React.FC = () => {
     setFilters(prevFilters => ({ ...prevFilters, [name]: value }));
   };
 
+  // Função para atualizar o filtro de Tipo
+  const handleTipoChange = (value: string) => {
+    setFilters(prevFilters => ({ ...prevFilters, TipInsumopmo: value }));
+  };
+
   // Função para mudar a página na paginação
   const handlePageChange = (newPage: number) => {
     const newOffset = (newPage - 1) * filters.Limit; // Calcular o offset com base na nova página
@@ -72,28 +80,24 @@ const InsumosList: React.FC = () => {
       title: 'Ações',
       key: 'actions',
       render: (text: any, record: InsumoDto) => (
-        <Space size="middle">
-          {/* <Button type="primary" onClick={() => handleEdit(record.idInsumopmo)}>Editar</Button>
-          <Button type="primary" danger onClick={() => handleDelete(record.idInsumopmo)}>Excluir</Button> */}
-        <Space size="middle">
-  <Button
-    color="primary"
-    variant="solid"
-    size="small"
-    onClick={() => handleEdit(record.idInsumopmo)}
-  >
-    Editar
-  </Button>
-  <Button
-    color="danger"
-    variant="solid"
-    size="small"
-    onClick={() => handleDelete(record.idInsumopmo)}
-  >
-    Excluir
-  </Button>
-</Space>
+        <Space size="small">
+          <Button
+  className="edit-button"
+  variant="solid"
+  size="small"
+  onClick={() => handleEdit(record.idInsumopmo)}
+>
+  Editar
+</Button>
 
+          <Button
+            color="danger"
+            variant="solid"
+            size="small"
+            onClick={() => handleDelete(record.idInsumopmo)}
+          >
+            Excluir
+          </Button>
         </Space>
       ),
     },
@@ -103,8 +107,9 @@ const InsumosList: React.FC = () => {
     <div>
       {/* Filtros */}
       <Row gutter={[16, 16]} justify="center">
-        <Col span={6}>
+        <Col  span={6}>
           <Input
+            size='middle'
             placeholder="Nome"
             name="NomInsumopmo"
             value={filters.NomInsumopmo}
@@ -113,6 +118,7 @@ const InsumosList: React.FC = () => {
         </Col>
         <Col span={6}>
           <Input
+            size='middle'
             placeholder="Sigla"
             name="SglInsumo"
             value={filters.SglInsumo}
@@ -120,15 +126,23 @@ const InsumosList: React.FC = () => {
           />
         </Col>
         <Col span={6}>
-          <Input
-            placeholder="Tipo"
-            name="TipInsumopmo"
-            value={filters.TipInsumopmo}
-            onChange={handleFilterChange}
-          />
+        <Select
+            size='middle'
+            placeholder="Tipo" // Mostra um placeholder quando nada está selecionado
+            value={filters.TipInsumopmo || undefined}  // Se não houver valor, o `undefined` é passado para mostrar o placeholder
+            onChange={handleTipoChange}
+            style={{ width: '100%' }}
+            allowClear  // Permite que o usuário limpe o valor selecionado
+>
+  <Option value="E">Estruturado</Option>
+  <Option value="L">Não Estruturado</Option>
+</Select>
         </Col>
         <Col span={6}>
-          <Button type="primary" onClick={fetchFilteredInsumos}>Buscar</Button>
+          <Button 
+            className="edit-button"
+            variant="solid"
+            size="middle"type="primary" onClick={fetchFilteredInsumos}>Buscar</Button>
         </Col>
       </Row>
 
