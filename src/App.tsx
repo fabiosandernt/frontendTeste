@@ -24,8 +24,6 @@ const App: React.FC = () => {
   <SideBar />
 </Sider>
 
-
-
         {/* Conteúdo Principal */}
         <Layout>
           <Content style={{ padding: '24px' }}>  {/* Removido marginLeft para deixar responsivo */}
