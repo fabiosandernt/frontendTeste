@@ -1,170 +1,152 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Button, Pagination, Input, Space, Row, Col, Select } from 'antd'; // Adicionei o Select do Ant Design
-import { fetchInsumos } from '../../services/InsumoService'; // Função para buscar insumos
-import { InsumoDto } from '../../models/InsumoDto'; // Modelo do DTO
-import './Insumos.css'; // Importa o arquivo de estilo
-
-const { Option } = Select;
+import React, { useState, useEffect } from 'react'; 
+import { Table, Button, Form, Row, Col } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom'; // Importa useNavigate para redirecionamento
+import PaginationComponent from '../../components/PaginationComponent';
+import { fetchInsumos } from '../../services/InsumoService';
+import { InsumoDto } from '../../models/InsumoDto';
+import './Insumos.css';
 
 const InsumosList: React.FC = () => {
-  const [insumos, setInsumos] = useState<InsumoDto[]>([]); // Lista de insumos
-  const [loading, setLoading] = useState(false); // Estado de loading
+  const [insumos, setInsumos] = useState<InsumoDto[]>([]);
+  const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     NomInsumopmo: '',
     SglInsumo: '',
-    TipInsumopmo: '', // Aqui o valor será 'E' ou 'L'
-    Limit: 10, // Limite por página
-    Offset: 0, // Página inicial
+    TipInsumopmo: '',
+    Limit: 10,
+    Offset: 0,
     Sort: '',
   });
-  const [totalCount, setTotalCount] = useState(0); // Total de itens retornados pela API
-  const [currentPage, setCurrentPage] = useState(1); // Página atual
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Função para buscar os insumos filtrados
+  const navigate = useNavigate(); // Inicializa o hook para redirecionamento
+
+  // Função para buscar os insumos com os filtros aplicados
   const fetchFilteredInsumos = () => {
     setLoading(true);
-    fetchInsumos(filters).then(data => {
-      setInsumos(data); // Atualiza a lista de insumos com os dados
-      setTotalCount(100); // Definir um valor fictício (ou ajustar baseado nos dados)
-      setLoading(false);
-    }).catch(error => {
-      console.error("Erro ao buscar insumos:", error);
-      setLoading(false);
-    });
+    fetchInsumos(filters)
+      .then(data => {
+        setInsumos(data);
+        setTotalCount(100); // Ajuste conforme necessário
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error("Erro ao buscar insumos:", error);
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
-    fetchFilteredInsumos(); // Buscar os insumos ao carregar o componente
-  }, [filters]); // Dependências para buscar novamente ao mudar os filtros
+    fetchFilteredInsumos();
+  }, [filters]);
 
-  // Função para editar um insumo
-  const handleEdit = (id: number) => {
-    console.log(`Editar insumo com ID: ${id}`);
-    // Aqui você pode redirecionar ou abrir um modal de edição
-  };
-
-  // Função para excluir um insumo
-  const handleDelete = (id: number) => {
-    console.log(`Excluir insumo com ID: ${id}`);
-    // Aqui você pode chamar a função para remover o item
-  };
-
-  // Função para atualizar os filtros
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFilters(prevFilters => ({ ...prevFilters, [name]: value }));
   };
 
-  // Função para atualizar o filtro de Tipo
-  const handleTipoChange = (value: string) => {
-    setFilters(prevFilters => ({ ...prevFilters, TipInsumopmo: value }));
-  };
-
-  // Função para mudar a página na paginação
   const handlePageChange = (newPage: number) => {
-    const newOffset = (newPage - 1) * filters.Limit; // Calcular o offset com base na nova página
+    const newOffset = (newPage - 1) * filters.Limit;
     setFilters(prevFilters => ({ ...prevFilters, Offset: newOffset }));
-    setCurrentPage(newPage); // Atualizar a página atual
+    setCurrentPage(newPage);
   };
 
-  // Definição das colunas para a tabela Ant Design
-  const columns = [
-    { title: 'Ordem', dataIndex: 'numOrdemexibicao', key: 'numOrdemexibicao' },
-    { title: 'Tipo', dataIndex: 'tipInsumopmo', key: 'tipInsumopmo', render: (text: string) => (text === 'E' ? 'Estruturado' : 'Não Estruturado') },
-    { title: 'Nome', dataIndex: 'nomInsumopmo', key: 'nomInsumopmo' },
-    { title: 'Sigla', dataIndex: 'sglInsumo', key: 'sglInsumo' },
-    { title: 'Exportar', dataIndex: 'flgExportainsumo', key: 'flgExportainsumo', render: (flag: boolean) => (flag ? 'Sim' : 'Não') },
-    { title: 'Pré-aprovado', dataIndex: 'flgPreaprovado', key: 'flgPreaprovado', render: (flag: boolean) => (flag ? 'Sim' : 'Não') },
-    { title: 'Ativo', dataIndex: 'flgAtivo', key: 'flgAtivo', render: (flag: boolean) => (flag ? 'Sim' : 'Não') },
-    {
-      title: 'Ações',
-      key: 'actions',
-      render: (text: any, record: InsumoDto) => (
-        <Space size="small">
-          <Button
-  className="edit-button"
-  variant="solid"
-  size="small"
-  onClick={() => handleEdit(record.idInsumopmo)}
->
-  Editar
-</Button>
+  // Função para redirecionar para a tela de edição de insumo e exibir o ID
+  const handleEdit = (id: number) => {
+    console.log("ID do insumo:", id); // Adiciona o console.log para mostrar o ID
+    navigate(`/insumos/editar/${id}`); // Redireciona para a tela de edição passando o ID
+  };
 
-          <Button
-            color="danger"
-            variant="solid"
-            size="small"
-            onClick={() => handleDelete(record.idInsumopmo)}
-          >
-            Excluir
-          </Button>
-        </Space>
-      ),
-    },
-  ];
+  const handleDelete = (id: number) => {
+    console.log(`Excluir insumo com ID: ${id}`);
+    // Lógica para excluir o item
+  };
 
   return (
     <div>
-      {/* Filtros */}
-      <Row gutter={[16, 16]} justify="center">
-        <Col  span={6}>
-          <Input
-            size='middle'
-            placeholder="Nome"
-            name="NomInsumopmo"
-            value={filters.NomInsumopmo}
-            onChange={handleFilterChange}
-          />
-        </Col>
-        <Col span={6}>
-          <Input
-            size='middle'
-            placeholder="Sigla"
-            name="SglInsumo"
-            value={filters.SglInsumo}
-            onChange={handleFilterChange}
-          />
-        </Col>
-        <Col span={6}>
-        <Select
-            size='middle'
-            placeholder="Tipo" // Mostra um placeholder quando nada está selecionado
-            value={filters.TipInsumopmo || undefined}  // Se não houver valor, o `undefined` é passado para mostrar o placeholder
-            onChange={handleTipoChange}
-            style={{ width: '100%' }}
-            allowClear  // Permite que o usuário limpe o valor selecionado
->
-  <Option value="E">Estruturado</Option>
-  <Option value="L">Não Estruturado</Option>
-</Select>
-        </Col>
-        <Col span={6}>
-          <Button 
-            className="edit-button"
-            variant="solid"
-            size="middle"type="primary" onClick={fetchFilteredInsumos}>Buscar</Button>
-        </Col>
-      </Row>
+      {/* Formulário de Filtros */}
+      <Form>
+        <Row className="mb-3">
+          <Col md={4}>
+            <Form.Group controlId="filterNome">
+              <Form.Label>Nome</Form.Label>
+              <Form.Control
+                type="text"
+                name="NomInsumopmo"
+                value={filters.NomInsumopmo}
+                onChange={handleFilterChange}
+                placeholder="Nome do Insumo"
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group controlId="filterSigla">
+              <Form.Label>Sigla</Form.Label>
+              <Form.Control
+                type="text"
+                name="SglInsumo"
+                value={filters.SglInsumo}
+                onChange={handleFilterChange}
+                placeholder="Sigla do Insumo"
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group controlId="filterTipo">
+              <Form.Label>Tipo</Form.Label>
+              <Form.Control
+                as="select"
+                name="TipInsumopmo"
+                value={filters.TipInsumopmo}
+                onChange={handleFilterChange}
+              >
+                <option value="">Selecione o Tipo</option>
+                <option value="E">Estruturado</option>
+                <option value="L">Não Estruturado</option>
+              </Form.Control>
+            </Form.Group>
+          </Col>
+        </Row>
+        <Button variant="primary" onClick={fetchFilteredInsumos}>Buscar</Button>
+      </Form>
 
-      {/* Tabela */}
-      <Table
-        dataSource={insumos}
-        columns={columns}
-        rowKey="idInsumopmo"
-        loading={loading}
-        pagination={false}  // Desativamos a paginação padrão
-        style={{ marginTop: '20px' }}
-      />
+      {/* Tabela de Insumos */}
+      <div className="table-responsive mt-4">
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>Ordem</th>
+              <th>Tipo</th>
+              <th>Nome</th>
+              <th>Sigla</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {insumos.map(insumo => (
+              <tr key={insumo.idInsumopmo}>
+                <td>{insumo.numOrdemexibicao}</td>
+                <td>{insumo.tipInsumopmo === 'E' ? 'Estruturado' : 'Não Estruturado'}</td>
+                <td>{insumo.nomInsumopmo}</td>
+                <td>{insumo.sglInsumo}</td>
+                <td>
+                  <Button className="edit-button" onClick={() => handleEdit(insumo.idInsumopmo)}>Editar</Button>{' '}
+                  <Button variant="danger" onClick={() => handleDelete(insumo.idInsumopmo)}>Excluir</Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </div>
 
       {/* Paginação */}
-      <Row justify="center" style={{ marginTop: '20px' }}>
-        <Pagination
-          current={currentPage}
-          total={totalCount}
-          pageSize={filters.Limit}
-          onChange={handlePageChange}
-        />
-      </Row>
+      <PaginationComponent
+        currentPage={currentPage}
+        totalItems={totalCount}
+        itemsPerPage={filters.Limit}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 };

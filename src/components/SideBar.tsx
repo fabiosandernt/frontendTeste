@@ -1,46 +1,45 @@
 import React from 'react';
-import { Menu } from 'antd';
+import { Nav, Navbar, NavDropdown, Button } from 'react-bootstrap';  // Usando os componentes do Bootstrap
 import { Link } from 'react-router-dom';
-import { SettingOutlined, ToolOutlined, AppstoreOutlined } from '@ant-design/icons';
+import './SideBar.css';  // Importando o CSS da SideBar
 
-const SideBar: React.FC = () => {
+interface SideBarProps {
+  collapsed: boolean;
+  toggleSidebar: () => void;
+}
+
+const SideBar: React.FC<SideBarProps> = ({ collapsed, toggleSidebar }) => {
   return (
-    <Menu
-      mode="inline"
-      //style={{ width: 256, height: '100vh', backgroundColor: '#1C3A57', color: 'white', position: 'fixed' }}
-      theme="dark"
-    >
-      <Menu.SubMenu key="admin" icon={<ToolOutlined />} title="Administração">
-        <Menu.Item key="log-auditoria">
-          <Link to="/extracao-log-auditoria">Extração Log Auditoria</Link>
-        </Menu.Item>
-        <Menu.Item key="log-notificacao">
-          <Link to="/log-notificacao">Log Notificação</Link>
-        </Menu.Item>
-      </Menu.SubMenu>
-      <Menu.SubMenu key="config" icon={<SettingOutlined />} title="Configuração">
-        <Menu.Item key="insumos">
-          <Link to="/insumos">Insumos</Link>
-        </Menu.Item>
-        <Menu.Item key="gabarito">
-          <Link to="/gabarito">Gabarito</Link>
-        </Menu.Item>
-        <Menu.Item key="pmo">
-          <Link to="/pmo">PMO</Link>
-        </Menu.Item>
-      </Menu.SubMenu>
-      <Menu.SubMenu key="estudo" icon={<AppstoreOutlined />} title="Estudo">
-        <Menu.Item key="informar-dados">
-          <Link to="/informar-dados">Informar Dados</Link>
-        </Menu.Item>
-        <Menu.Item key="monitorar-estudo">
-          <Link to="/monitorar-estudo">Monitorar Estudo</Link>
-        </Menu.Item>
-        <Menu.Item key="convergir-pld">
-          <Link to="/convergir-pld">Convergir PLD</Link>
-        </Menu.Item>
-      </Menu.SubMenu>
-    </Menu>
+    <>
+      {/* Botão hambúrguer para abrir/fechar a sidebar */}
+      <Button variant="dark" onClick={toggleSidebar} className="hamburger-btn">
+        ☰
+      </Button>
+
+      {/* Sidebar */}
+      <Navbar bg="dark" variant="dark" expand="lg" className={`d-flex flex-column sidebar ${collapsed ? 'collapsed' : ''}`} style={{ height: '100vh', position: 'fixed', top: 0, left: 0, transition: 'width 0.3s' }}>
+        <Nav className="flex-column">
+          <Navbar.Brand as={Link} to="/">Meu App</Navbar.Brand>
+
+          <NavDropdown title="Administração" id="admin-dropdown">
+            <NavDropdown.Item as={Link} to="/extracao-log-auditoria">Extração Log Auditoria</NavDropdown.Item>
+            <NavDropdown.Item as={Link} to="/log-notificacao">Log Notificação</NavDropdown.Item>
+          </NavDropdown>
+
+          <NavDropdown title="Configuração" id="config-dropdown">
+            <NavDropdown.Item as={Link} to="/insumos">Insumos</NavDropdown.Item>
+            <NavDropdown.Item as={Link} to="/gabarito">Gabarito</NavDropdown.Item>
+            <NavDropdown.Item as={Link} to="/pmo">PMO</NavDropdown.Item>
+          </NavDropdown>
+
+          <NavDropdown title="Estudo" id="estudo-dropdown">
+            <NavDropdown.Item as={Link} to="/informar-dados">Informar Dados</NavDropdown.Item>
+            <NavDropdown.Item as={Link} to="/monitorar-estudo">Monitorar Estudo</NavDropdown.Item>
+            <NavDropdown.Item as={Link} to="/convergir-pld">Convergir PLD</NavDropdown.Item>
+          </NavDropdown>
+        </Nav>
+      </Navbar>
+    </>
   );
 };
 

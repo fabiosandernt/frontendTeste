@@ -1,0 +1,26 @@
+/* Estilos para o botão hambúrguer */
+.hamburger-btn {
+  z-index: 1000;  /* Para garantir que o botão fique acima da sidebar */
+  position: fixed;
+  top: 10px;
+  left: 10px;
+}
+
+/* Estilos quando a sidebar está colapsada */
+.collapsed {
+  width: 0 !important;
+  overflow: hidden;
+  transition: width 0.3s ease;
+}
+
+/* Sidebar expandida */
+.sidebar-expanded {
+  width: 240px;
+  transition: width 0.3s ease;
+}
+
+/* Esconda o conteúdo da sidebar quando colapsada */
+.collapsed .nav, 
+.collapsed .navbar-brand {
+  display: none;
+}

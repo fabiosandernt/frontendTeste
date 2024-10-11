@@ -1,38 +1,34 @@
-.App {
-  text-align: center;
+/* Estilos para o botão hambúrguer */
+.hamburger-btn {
+  z-index: 1000;
+  position: fixed;
+  top: 10px;
+  left: 10px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* Container da aplicação */
+.app-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  transition: all 0.3s ease;
 }
 
-.App-link {
-  color: #61dafb;
+/* Sidebar expandida */
+.sidebar {
+  width: 240px;
+  transition: width 0.3s ease;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Sidebar colapsada */
+.sidebar.collapsed {
+  width: 60px; /* Defina a largura da sidebar colapsada */
+}
+
+/* Conteúdo principal ajustado para a sidebar */
+.main-content {
+  margin-left: 240px;
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar-collapsed .main-content {
+  margin-left: 60px;
 }

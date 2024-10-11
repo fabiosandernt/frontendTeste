@@ -4,8 +4,10 @@
     padding: 40px;
   }
 }
+
+/* Removendo a classe relacionada ao AntDesign */
 .ant-layout-sider-collapsed {
-  background-color: transparent !important;  /* Remover a cor de fundo ao colapsar */
+  background-color: transparent !important;
 }
 
 /* Estilos para telas menores */

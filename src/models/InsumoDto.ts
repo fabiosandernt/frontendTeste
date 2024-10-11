@@ -8,4 +8,18 @@ export interface InsumoDto {
   sglInsumo: string;
   flgAtivo: boolean;
   dinUltimaalteracao?: Date; // Pode ser opcional
+
+  // Novos campos para a edição do insumo
+  estagio?: boolean;
+  patamar?: boolean;
+  limite?: boolean;
+  preAprovadoComAlteracao?: boolean;
+  
+  aceitaValorNegativo?: boolean;
+  recuperaValorAnterior?: boolean;
+  destacaDiferenca?: boolean;
+  comportamentoObrigatorio?: boolean;
+  
+  qtdDigitos?: number;
+  qtdDecimais?: number;
 }

@@ -1,7 +1,23 @@
 .edit-button {
-    background-color: #1C3A57 !important;
-    color: white !important;
-    border: none;
-    
-  }
-  
+  background-color: #1C3A57 !important;
+  color: white !important;
+  border: none;
+}
+
+.edit-button {
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  transition: background-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.table-responsive {
+  margin-top: 20px;
+}
+
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
