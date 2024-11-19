@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Table, Button, Form, Row, Col, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { fetchPmos } from '../../services/PmoService';
+import { fetchPmos, incluirPmo } from '../../services/PmoService';
 import { PmoDto, PmoFilter, SemanaOperativaDto } from '../../models/PmoDto';
 import './Pmo.css';
 
@@ -38,6 +38,22 @@ const PmoList: React.FC = () => {
         console.error('Erro ao buscar PMOs:', error);
         setLoading(false);
       });
+  };
+
+  // Função para incluir um novo PMO
+  const handleIncluirPmo = async () => {
+    if (!filters.anoReferencia || !filters.mesReferencia) {
+      alert('Por favor, selecione um Ano e Mês antes de incluir um PMO.');
+      return;
+    }
+
+    try {
+      await incluirPmo(filters.anoReferencia, filters.mesReferencia);
+      alert('PMO incluído com sucesso!');
+    } catch (error) {
+      console.error('Erro ao incluir PMO:', error);
+      alert('Erro ao incluir o PMO.');
+    }
   };
 
   // Manipulação de filtros
@@ -78,7 +94,6 @@ const PmoList: React.FC = () => {
 
   return (
     <div>
-      <h1>Lista de PMOs</h1>
       <Form>
         <Row className="mb-3">
           <Col md={6}>
@@ -123,6 +138,13 @@ const PmoList: React.FC = () => {
         </Row>
         <Button variant="primary" onClick={fetchFilteredPmos}>
           Buscar
+        </Button>
+        <Button
+          variant="success"
+          className="ml-2"
+          onClick={handleIncluirPmo}
+        >
+          Incluir PMO
         </Button>
         <Button
           variant="secondary"

@@ -5,7 +5,7 @@ import PmoList from './PmoList';
 const PmoPage: React.FC = () => {
   return (
     <Container>
-      <h2>PMO</h2>
+      {/* <h3>PMO</h3> */}
       <PmoList />
     </Container>
   );

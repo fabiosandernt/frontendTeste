@@ -54,5 +54,21 @@ export const alterarSemanaOperativa = async (dados: {
   }
 };
 
+// Função para incluir um novo PMO
+export const incluirPmo = async (anoReferencia: number, mesReferencia: number): Promise<void> => {
+  try {
+    const payload = {
+      anoReferencia,
+      mesReferencia,
+    };
+    await api.post('/PMO/IncluirPMO', payload);
+  } catch (error: any) {
+    if (error.response && error.response.data && error.response.data.errors) {
+      // Retorna os erros detalhados
+      throw error.response.data.errors;
+    }
+    throw new Error('Erro desconhecido ao incluir o PMO');
+  }
+};
 
 

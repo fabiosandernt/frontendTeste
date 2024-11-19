@@ -19,7 +19,7 @@ const SideBar: React.FC<SideBarProps> = ({ collapsed, toggleSidebar }) => {
       {/* Sidebar */}
       <Navbar bg="dark" variant="dark" expand="lg" className={`d-flex flex-column sidebar ${collapsed ? 'collapsed' : ''}`} style={{ height: '100vh', position: 'fixed', top: 0, left: 0, transition: 'width 0.3s' }}>
         <Nav className="flex-column">
-          <Navbar.Brand as={Link} to="/">Meu App</Navbar.Brand>
+          <Navbar.Brand as={Link} to="/">WebPMO</Navbar.Brand>
 
           <NavDropdown title="Administração" id="admin-dropdown">
             <NavDropdown.Item as={Link} to="/extracao-log-auditoria">Extração Log Auditoria</NavDropdown.Item>
@@ -37,6 +37,18 @@ const SideBar: React.FC<SideBarProps> = ({ collapsed, toggleSidebar }) => {
             <NavDropdown.Item as={Link} to="/monitorar-estudo">Monitorar Estudo</NavDropdown.Item>
             <NavDropdown.Item as={Link} to="/convergir-pld">Convergir PLD</NavDropdown.Item>
           </NavDropdown>
+
+          <NavDropdown title="Modelos" id="admin-dropdown">
+            <NavDropdown.Item as={Link} to="/extracao-log-auditoria">ModeloDecomp</NavDropdown.Item>
+            <NavDropdown.Item as={Link} to="/log-notificacao">Automação</NavDropdown.Item>
+          </NavDropdown>
+
+          <NavDropdown title="Publicação" id="admin-dropdown">
+            <NavDropdown.Item as={Link} to="/extracao-log-auditoria">Configurar</NavDropdown.Item>
+            <NavDropdown.Item as={Link} to="/log-notificacao">Importação</NavDropdown.Item>
+          </NavDropdown>
+
+
         </Nav>
       </Navbar>
     </>

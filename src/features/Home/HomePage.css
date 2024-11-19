@@ -1,13 +1,37 @@
+.chart-container {
+  padding: 20px;
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  margin-top: 20px;
+  color: white;
+}
+
+.table-container {
+  padding: 20px;
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+h3 {
+  color: #fff;
+}
+
+body {
+  background-color: #0a0a0a;
+  color: #fff;
+}
+
+
+
+
 /* Estilos para telas grandes */
 @media (min-width: 1024px) {
   .App-header {
     padding: 40px;
   }
-}
-
-/* Removendo a classe relacionada ao AntDesign */
-.ant-layout-sider-collapsed {
-  background-color: transparent !important;
 }
 
 /* Estilos para telas menores */
