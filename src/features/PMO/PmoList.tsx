@@ -1,13 +1,26 @@
 import React, { useState } from 'react';
 import { Table, Button, Form, Row, Col, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { fetchPmos, incluirPmo } from '../../services/PmoService';
-import { PmoDto, PmoFilter, SemanaOperativaDto } from '../../models/PmoDto';
+import { fetchPmos, excluirPmo, incluirPmo } from '../../services/PmoService';
+import { PmoDto, PmoFilter, DadosPmoDto, SemanaOperativaDto } from '../../models/PmoDto';
 import './Pmo.css';
+
+// Função para converter base64 para Uint8Array
+const base64ToUint8Array = (base64: string): Uint8Array => {
+  const binaryString = atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+};
 
 const PmoList: React.FC = () => {
   const [pmos, setPmos] = useState<PmoDto[]>([]);
+  const [dadosPmo, setDadosPmo] = useState<Record<number, DadosPmoDto>>({});
   const [loading, setLoading] = useState(false);
+  const [backendMessage, setBackendMessage] = useState<string | null>(null);
   const [filters, setFilters] = useState<PmoFilter>({
     anoReferencia: undefined,
     mesReferencia: undefined,
@@ -22,39 +35,71 @@ const PmoList: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
   // Função para buscar PMOs com filtros
-  const fetchFilteredPmos = () => {
+  const fetchFilteredPmos = async () => {
     if (!filters.anoReferencia || !filters.mesReferencia) {
       alert('Por favor, selecione um Ano e Mês antes de buscar.');
       return;
     }
 
+    setPmos([]);
+    setDadosPmo({});
+    setBackendMessage(null);
     setLoading(true);
-    fetchPmos({ ...filters, qtdMesesadiante: mesesFrente })
-      .then((data) => {
-        setPmos(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Erro ao buscar PMOs:', error);
-        setLoading(false);
+
+    try {
+      const data = await fetchPmos({ ...filters, qtdMesesadiante: mesesFrente });
+      setPmos(data);
+
+      // Mapeia os dados de exclusão por ID de PMO
+      const novosDadosPmo: Record<number, DadosPmoDto> = {};
+      data.forEach((pmo) => {
+        novosDadosPmo[pmo.idPmo] = {
+          idPMO: pmo.idPmo,
+          versaoPMO: base64ToUint8Array(pmo.verControleconcorrencia || ''), // Converte para Uint8Array
+        };
       });
+      setDadosPmo(novosDadosPmo);
+    } catch (error: any) {
+      if (error.message) {
+        setBackendMessage(error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Função para incluir um novo PMO
   const handleIncluirPmo = async () => {
-    if (!filters.anoReferencia || !filters.mesReferencia) {
-      alert('Por favor, selecione um Ano e Mês antes de incluir um PMO.');
+    const { anoReferencia, mesReferencia } = filters;
+  
+    if (!anoReferencia || !mesReferencia) {
+      alert('Por favor, selecione um Ano e Mês antes de incluir o PMO.');
       return;
     }
-
+  
+    setLoading(true);
+    setBackendMessage(null);
+  
     try {
-      await incluirPmo(filters.anoReferencia, filters.mesReferencia);
+      await incluirPmo(anoReferencia, mesReferencia);
       alert('PMO incluído com sucesso!');
-    } catch (error) {
-      console.error('Erro ao incluir PMO:', error);
-      alert('Erro ao incluir o PMO.');
+      fetchFilteredPmos(); // Atualiza a lista
+    } catch (error: any) {
+      // Exibe apenas a mensagem recebida do backend
+      setBackendMessage(typeof error === 'string' ? error : null);
+    } finally {
+      setLoading(false);
     }
   };
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
   // Manipulação de filtros
   const handleFilterChange = (e: React.ChangeEvent<any>) => {
@@ -70,16 +115,39 @@ const PmoList: React.FC = () => {
     setShowSemanasOperativas((prev) => !prev);
   };
 
-  // Navegar para a edição da semana operativa
   const handleEditSemana = (idPmo: number, semana: SemanaOperativaDto) => {
     const { idSemanaoperativa, datReuniao, datIniciomanutencao, datFimmanutencao } = semana;
     const stateToSend = { idSemanaoperativa, datReuniao, datIniciomanutencao, datFimmanutencao };
 
-    console.log('Navegando para edição com os dados:', stateToSend);
-
     navigate(`/pmo/${idPmo}/semana-operativa/edit`, {
       state: { semana: stateToSend },
     });
+  };
+
+  // Função para excluir um PMO
+  const handleDeletePmo = async (idPmo: number) => {
+    if (!window.confirm('Tem certeza que deseja excluir este PMO?')) return;
+
+    setLoading(true);
+    setBackendMessage(null);
+
+    try {
+      const dados = dadosPmo[idPmo];
+      if (!dados) throw new Error('Dados para exclusão não encontrados.');
+
+      await excluirPmo(dados); // Envia o DTO no formato esperado
+      setPmos((prevPmos) => prevPmos.filter((pmo) => pmo.idPmo !== idPmo)); // Atualiza a lista localmente
+      setDadosPmo((prevDados) => {
+        const { [idPmo]: _, ...rest } = prevDados;
+        return rest;
+      });
+    } catch (error: any) {
+      if (error.message) {
+        setBackendMessage(error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) {
@@ -139,62 +207,64 @@ const PmoList: React.FC = () => {
         <Button variant="primary" onClick={fetchFilteredPmos}>
           Buscar
         </Button>
-        <Button
-          variant="success"
-          className="ml-2"
-          onClick={handleIncluirPmo}
-        >
-          Incluir PMO
-        </Button>
-        <Button
-          variant="secondary"
-          className="ml-2"
-          onClick={handleToggleSemanas}
-        >
+        <Button variant="secondary" className="ml-2" onClick={handleToggleSemanas}>
           {showSemanasOperativas ? 'Ocultar Semanas Operativas' : 'Ver Semanas Operativas'}
+        </Button>
+        <Button variant="success" className="ml-2" onClick={handleIncluirPmo}>
+          Incluir PMO
         </Button>
       </Form>
 
       <div className="table-responsive mt-4">
-        {pmos.map((pmo) => (
-          <div key={pmo.idPmo} className="mb-4">
-            <h3>
-              PMO {new Date(0, pmo.mesReferencia - 1).toLocaleString('pt-BR', { month: 'long' })}{' '}
-              {pmo.anoReferencia}
-            </h3>
-            {showSemanasOperativas && (
-              <Table striped bordered hover>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Data da Reunião</th>
-                    <th>Início Manutenções</th>
-                    <th>Término Manutenções</th>
-                    <th>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pmo.tbSemanaoperativas.map((semana) => (
-                    <tr key={semana.idSemanaoperativa}>
-                      <td>{semana.idSemanaoperativa}</td>
-                      <td>{new Date(semana.datReuniao).toLocaleDateString('pt-BR')}</td>
-                      <td>{new Date(semana.datIniciomanutencao).toLocaleDateString('pt-BR')}</td>
-                      <td>{new Date(semana.datFimmanutencao).toLocaleDateString('pt-BR')}</td>
-                      <td>
-                        <Button
-                          className="edit-button"
-                          onClick={() => handleEditSemana(pmo.idPmo, semana)}
-                        >
-                          Editar
-                        </Button>
-                      </td>
+        {backendMessage && <p className="text-center text-danger">{backendMessage}</p>}
+        {pmos.length > 0 &&
+          pmos.map((pmo) => (
+            <div key={pmo.idPmo} className="mb-4">
+              <h3>
+                PMO{' '}
+                {new Date(0, pmo.mesReferencia - 1).toLocaleString('pt-BR', { month: 'long' })}{' '}
+                {pmo.anoReferencia}
+              </h3>
+              {showSemanasOperativas && (
+                <Table striped bordered hover>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Data da Reunião</th>
+                      <th>Início Manutenções</th>
+                      <th>Término Manutenções</th>
+                      <th>Ações</th>
                     </tr>
-                  ))}
-                </tbody>
-              </Table>
-            )}
-          </div>
-        ))}
+                  </thead>
+                  <tbody>
+                    {pmo.tbSemanaoperativas?.map((semana) => (
+                      <tr key={semana.idSemanaoperativa}>
+                        <td>{semana.idSemanaoperativa}</td>
+                        <td>{new Date(semana.datReuniao).toLocaleDateString('pt-BR')}</td>
+                        <td>{new Date(semana.datIniciomanutencao).toLocaleDateString('pt-BR')}</td>
+                        <td>{new Date(semana.datFimmanutencao).toLocaleDateString('pt-BR')}</td>
+                        <td>
+                          <Button
+                            className="edit-button"
+                            onClick={() => handleEditSemana(pmo.idPmo, semana)}
+                          >
+                            Editar
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              )}
+              <Button
+                variant="danger"
+                className="mt-2"
+                onClick={() => handleDeletePmo(pmo.idPmo)}
+              >
+                Excluir
+              </Button>
+            </div>
+          ))}
       </div>
     </div>
   );

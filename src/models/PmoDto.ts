@@ -3,6 +3,7 @@ export interface PmoDto {
   anoReferencia: number;
   mesReferencia: number;
   qtdMesesadiante?: number;
+  verControleconcorrencia: string; // Base64 do controle de concorrência
   tbSemanaoperativas: SemanaOperativaDto[];
 }
 
@@ -24,4 +25,9 @@ export interface SemanaOperativaDto {
   datIniciomanutencao: string;
   datFimmanutencao: string;
   numRevisao?: number;
+}
+
+export interface DadosPmoDto {
+  idPMO: number;
+  versaoPMO: Uint8Array; // Representação do controle de concorrência em formato Uint8Array
 }

@@ -1,5 +1,6 @@
 import api from '../api/api';
-import { PmoDto, PmoFilter } from '../models/PmoDto';
+import { DadosPmoDto, PmoDto, PmoFilter } from '../models/PmoDto';
+
 
 // Função para buscar PMOs com filtros
 export const fetchPmos = async (filter: PmoFilter = {}): Promise<PmoDto[]> => {
@@ -63,12 +64,48 @@ export const incluirPmo = async (anoReferencia: number, mesReferencia: number): 
     };
     await api.post('/PMO/IncluirPMO', payload);
   } catch (error: any) {
-    if (error.response && error.response.data && error.response.data.errors) {
-      // Retorna os erros detalhados
-      throw error.response.data.errors;
+    if (error.response && error.response.data) {
+      const responseData = error.response.data;
+
+      // Captura a mensagem em `errors` (se for uma lista) ou `message`
+      if (responseData.errors && Array.isArray(responseData.errors)) {
+        throw responseData.errors[0]; // Retorna a primeira mensagem
+      }
+
+      if (responseData.message) {
+        throw responseData.message; // Retorna uma mensagem única
+      }
     }
-    throw new Error('Erro desconhecido ao incluir o PMO');
+
+    // Lança o erro completo caso o formato do backend seja inesperado
+    throw error.response?.data || error; // Isso garante que sempre algo será exibido
   }
 };
+
+
+
+
+
+
+
+
+// Função para excluir um PMO
+export const excluirPmo = async (payload: DadosPmoDto): Promise<void> => {
+  try {
+    const data = {
+      idPMO: payload.idPMO,
+      versaoPMO: btoa(String.fromCharCode(...Array.from(payload.versaoPMO))), // Ajuste para compatibilidade
+    };
+    await api.request({
+      method: 'DELETE',
+      url: '/PMO/ExcluirPMO',
+      data,
+    });
+  } catch (error: any) {
+    console.error('Erro ao excluir PMO:', error);
+    throw error.response?.data?.message || 'Erro desconhecido ao excluir o PMO.';
+  }
+};
+
 
 
