@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Table, Button, Form, Row, Col, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { fetchPmos, excluirPmo, incluirPmo } from '../../services/PmoService';
-import { PmoDto, PmoFilter, DadosPmoDto, SemanaOperativaDto } from '../../models/PmoDto';
+import { PmoDto, PmoFilter, DadosPmoDto, SemanaOperativaDto, PMOManterModel, SemanaOperativaModel } from '../../models/PmoDto';
 import './Pmo.css';
 
 // Função para converter base64 para Uint8Array
@@ -17,7 +17,7 @@ const base64ToUint8Array = (base64: string): Uint8Array => {
 };
 
 const PmoList: React.FC = () => {
-  const [pmos, setPmos] = useState<PmoDto[]>([]);
+  const [pmos, setPmos] = useState<PMOManterModel[]>([]);
   const [dadosPmo, setDadosPmo] = useState<Record<number, DadosPmoDto>>({});
   const [loading, setLoading] = useState(false);
   const [backendMessage, setBackendMessage] = useState<string | null>(null);
@@ -53,9 +53,9 @@ const PmoList: React.FC = () => {
       // Mapeia os dados de exclusão por ID de PMO
       const novosDadosPmo: Record<number, DadosPmoDto> = {};
       data.forEach((pmo) => {
-        novosDadosPmo[pmo.idPmo] = {
-          idPMO: pmo.idPmo,
-          versaoPMO: base64ToUint8Array(pmo.verControleconcorrencia || ''), // Converte para Uint8Array
+        novosDadosPmo[pmo.id] = {
+          idPMO: pmo.id,
+          versaoPMO: base64ToUint8Array(pmo.versaoPmoString || ''), // Converte para Uint8Array
         };
       });
       setDadosPmo(novosDadosPmo);
@@ -115,9 +115,9 @@ const PmoList: React.FC = () => {
     setShowSemanasOperativas((prev) => !prev);
   };
 
-  const handleEditSemana = (idPmo: number, semana: SemanaOperativaDto) => {
-    const { idSemanaoperativa, datReuniao, datIniciomanutencao, datFimmanutencao } = semana;
-    const stateToSend = { idSemanaoperativa, datReuniao, datIniciomanutencao, datFimmanutencao };
+  const handleEditSemana = (idPmo: number, semana: SemanaOperativaModel) => {
+    const { idSemanaOperativa, dataReuniao, dataInicioManutencao, dataFimManutencao } = semana;
+    const stateToSend = { idSemanaOperativa, dataReuniao, dataInicioManutencao, dataFimManutencao };
 
     navigate(`/pmo/${idPmo}/semana-operativa/edit`, {
       state: { semana: stateToSend },
@@ -136,7 +136,7 @@ const PmoList: React.FC = () => {
       if (!dados) throw new Error('Dados para exclusão não encontrados.');
 
       await excluirPmo(dados); // Envia o DTO no formato esperado
-      setPmos((prevPmos) => prevPmos.filter((pmo) => pmo.idPmo !== idPmo)); // Atualiza a lista localmente
+      setPmos((prevPmos) => prevPmos.filter((pmo) => pmo.id !== idPmo)); // Atualiza a lista localmente
       setDadosPmo((prevDados) => {
         const { [idPmo]: _, ...rest } = prevDados;
         return rest;
@@ -219,7 +219,7 @@ const PmoList: React.FC = () => {
         {backendMessage && <p className="text-center text-danger">{backendMessage}</p>}
         {pmos.length > 0 &&
           pmos.map((pmo) => (
-            <div key={pmo.idPmo} className="mb-4">
+            <div key={pmo.id} className="mb-4">
               <h3>
                 PMO{' '}
                 {new Date(0, pmo.mesReferencia - 1).toLocaleString('pt-BR', { month: 'long' })}{' '}
@@ -237,16 +237,16 @@ const PmoList: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {pmo.tbSemanaoperativas?.map((semana) => (
-                      <tr key={semana.idSemanaoperativa}>
-                        <td>{semana.idSemanaoperativa}</td>
-                        <td>{new Date(semana.datReuniao).toLocaleDateString('pt-BR')}</td>
-                        <td>{new Date(semana.datIniciomanutencao).toLocaleDateString('pt-BR')}</td>
-                        <td>{new Date(semana.datFimmanutencao).toLocaleDateString('pt-BR')}</td>
+                    {pmo.semanasOperativas?.map((semana) => (
+                      <tr key={semana.idSemanaOperativa}>
+                        <td>{semana.idSemanaOperativa}</td>
+                        <td>{new Date(semana.dataReuniao).toLocaleDateString('pt-BR')}</td>
+                        <td>{new Date(semana.dataInicioManutencao).toLocaleDateString('pt-BR')}</td>
+                        <td>{new Date(semana.dataFimManutencao).toLocaleDateString('pt-BR')}</td>
                         <td>
                           <Button
                             className="edit-button"
-                            onClick={() => handleEditSemana(pmo.idPmo, semana)}
+                            onClick={() => handleEditSemana(pmo.id, semana)}
                           >
                             Editar
                           </Button>
@@ -259,7 +259,7 @@ const PmoList: React.FC = () => {
               <Button
                 variant="danger"
                 className="mt-2"
-                onClick={() => handleDeletePmo(pmo.idPmo)}
+                onClick={() => handleDeletePmo(pmo.id)}
               >
                 Excluir
               </Button>

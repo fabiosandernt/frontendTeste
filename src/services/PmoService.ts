@@ -1,21 +1,24 @@
 import api from '../api/api';
-import { DadosPmoDto, PmoDto, PmoFilter } from '../models/PmoDto';
+import { DadosPmoDto, PmoDto, PmoFilter, PMOManterModel } from '../models/PmoDto';
 
 
 // Função para buscar PMOs com filtros
-export const fetchPmos = async (filter: PmoFilter = {}): Promise<PmoDto[]> => {
+export const fetchPmos = async (filter: PmoFilter = {}): Promise<PMOManterModel[]> => {
   try {
     console.log('Chamando API com filtros:', filter);
-    const response = await api.get<PmoDto | PmoDto[]>('/PMO/filter', { params: filter });
+
+    // Faz a chamada à API com os parâmetros do filtro
+    const response = await api.get<PMOManterModel | PMOManterModel[]>('/PMO/Pesquisa', { params: filter });
     const data = response.data;
 
-    // Verifica se o retorno é um único objeto ou uma lista
+    // Retorna os dados convertidos para uma lista
     return Array.isArray(data) ? data : [data];
   } catch (error) {
-    console.error('Erro ao buscar PMOs:', error);
+    console.error('Erro ao buscar PMOManterModels:', error);
     throw error;
   }
 };
+
 
 // Função para buscar um PMO pelo ID
 export const fetchPmoById = async (id: number): Promise<PmoDto> => {
