@@ -14,18 +14,18 @@ const SemanaOperativaEdit: React.FC = () => {
   };
 
   const [semana, setSemana] = useState<{
-    idSemanaoperativa: number;
-    datReuniao: string;
-    datIniciomanutencao: string;
-    datFimmanutencao: string;
+    idSemanaOperativa: number;
+    dataReuniao: string;
+    dataInicioManutencao: string;
+    dataFimManutencao: string;
   } | null>(() => {
     if (state && state.semana) {
-      const { idSemanaoperativa, datReuniao, datIniciomanutencao, datFimmanutencao } = state.semana;
+      const { idSemanaOperativa, dataReuniao, dataInicioManutencao, dataFimManutencao } = state.semana;
       return {
-        idSemanaoperativa,
-        datReuniao: formatDate(datReuniao),
-        datIniciomanutencao: formatDate(datIniciomanutencao),
-        datFimmanutencao: formatDate(datFimmanutencao),
+        idSemanaOperativa,
+        dataReuniao: formatDate(dataReuniao),
+        dataInicioManutencao: formatDate(dataInicioManutencao),
+        dataFimManutencao: formatDate(dataFimManutencao),
       };
     }
     return null;
@@ -49,10 +49,10 @@ const SemanaOperativaEdit: React.FC = () => {
     setErrors([]); // Limpa mensagens de erro anteriores
     if (semana) {
       const dadosAlteracao = {
-        Id: semana.idSemanaoperativa,
-        DataReuniao: semana.datReuniao,
-        DataInicioManutencao: semana.datIniciomanutencao,
-        DataFimManutencao: semana.datFimmanutencao,
+        Id: semana.idSemanaOperativa,
+        DataReuniao: semana.dataReuniao,
+        DataInicioManutencao: semana.dataInicioManutencao,
+        DataFimManutencao: semana.dataFimManutencao,
       };
 
       try {
@@ -92,7 +92,7 @@ const SemanaOperativaEdit: React.FC = () => {
               <Form.Control
                 type="text"
                 name="id"
-                value={semana.idSemanaoperativa}
+                value={semana.idSemanaOperativa}
                 readOnly
               />
             </Form.Group>
@@ -105,7 +105,7 @@ const SemanaOperativaEdit: React.FC = () => {
               <Form.Control
                 type="date"
                 name="datReuniao"
-                value={semana.datReuniao}
+                value={semana.dataReuniao}
                 onChange={handleInputChange}
                 required
               />
@@ -119,7 +119,7 @@ const SemanaOperativaEdit: React.FC = () => {
               <Form.Control
                 type="date"
                 name="datIniciomanutencao"
-                value={semana.datIniciomanutencao}
+                value={semana.dataInicioManutencao}
                 onChange={handleInputChange}
                 required
               />
@@ -131,7 +131,7 @@ const SemanaOperativaEdit: React.FC = () => {
               <Form.Control
                 type="date"
                 name="datFimmanutencao"
-                value={semana.datFimmanutencao}
+                value={semana.dataFimManutencao}
                 onChange={handleInputChange}
                 required
               />

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Table, Button, Form, Row, Col, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { fetchPmos, excluirPmo, incluirPmo } from '../../services/PmoService';
-import { PmoDto, PmoFilter, DadosPmoDto, SemanaOperativaDto, PMOManterModel, SemanaOperativaModel } from '../../models/PmoDto';
+import { PmoDto, PmoFilter, DadosPmoDto, PMOManterModel, SemanaOperativaModel } from '../../models/PmoDto';
 import './Pmo.css';
 
 // Função para converter base64 para Uint8Array
@@ -115,11 +115,11 @@ const PmoList: React.FC = () => {
     setShowSemanasOperativas((prev) => !prev);
   };
 
-  const handleEditSemana = (idPmo: number, semana: SemanaOperativaModel) => {
+  const handleEditSemana = (id: number, semana: SemanaOperativaModel) => {
     const { idSemanaOperativa, dataReuniao, dataInicioManutencao, dataFimManutencao } = semana;
     const stateToSend = { idSemanaOperativa, dataReuniao, dataInicioManutencao, dataFimManutencao };
 
-    navigate(`/pmo/${idPmo}/semana-operativa/edit`, {
+    navigate(`/pmo/${id}/semana-operativa/edit`, {
       state: { semana: stateToSend },
     });
   };
