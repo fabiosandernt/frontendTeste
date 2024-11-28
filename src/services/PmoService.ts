@@ -1,7 +1,8 @@
 import api from '../api/api';
+import { ManutencaoSemanaOperativaModel } from '../models/ManutencaoSemanaOperativaModel';
 import { DadosPmoDto, PmoDto, PmoFilter, PMOManterModel } from '../models/PmoDto';
-
-
+import { AberturaEstudoModel } from '../models/AberturaEstudoModel';
+import { EscolhaGabaritoModel } from '../models/EscolhaGabaritoModel';
 // Função para buscar PMOs com filtros
 export const fetchPmos = async (filter: PmoFilter = {}): Promise<PMOManterModel[]> => {
   try {
@@ -18,6 +19,9 @@ export const fetchPmos = async (filter: PmoFilter = {}): Promise<PMOManterModel[
     throw error;
   }
 };
+
+//Função para Abrir um Estudo
+
 
 
 // Função para buscar um PMO pelo ID
@@ -43,20 +47,32 @@ export const updatePmo = async (pmo: PmoDto): Promise<void> => {
 
 export const alterarSemanaOperativa = async (dados: {
   Id: number;
+  IdPMO: number;
   DataReuniao: string;
   DataInicioManutencao: string;
   DataFimManutencao: string;
 }): Promise<void> => {
   try {
-    await api.post('/PMO/AlterarSemanaOperativa', dados);
+    await api.put('/PMO/AlterarSemana', dados);
   } catch (error: any) {
-    if (error.response && error.response.data && error.response.data.errors) {
-      // Retorna os erros detalhados
-      throw error.response.data.errors;
+    if (error.response && error.response.data) {
+      const responseData = error.response.data;
+
+      // Verifica se há mensagens de erro específicas no formato esperado
+      if (responseData.errors && Array.isArray(responseData.errors)) {
+        throw new Error(responseData.errors.join(', ')); // Concatena mensagens de erro em uma string
+      }
+
+      if (responseData.message) {
+        throw new Error(responseData.message); // Lança a mensagem como erro
+      }
     }
+
+    // Caso o formato do erro seja inesperado, lança uma mensagem genérica
     throw new Error('Erro desconhecido ao alterar a semana operativa');
   }
 };
+
 
 // Função para incluir um novo PMO
 export const incluirPmo = async (anoReferencia: number, mesReferencia: number): Promise<void> => {
@@ -85,19 +101,12 @@ export const incluirPmo = async (anoReferencia: number, mesReferencia: number): 
   }
 };
 
-
-
-
-
-
-
-
 // Função para excluir um PMO
 export const excluirPmo = async (payload: DadosPmoDto): Promise<void> => {
   try {
     const data = {
       idPMO: payload.idPMO,
-      versaoPMO: btoa(String.fromCharCode(...Array.from(payload.versaoPMO))), // Ajuste para compatibilidade
+      versaoPMO: payload.versaoPMO, // Ajuste para compatibilidade
     };
     await api.request({
       method: 'DELETE',
@@ -110,5 +119,37 @@ export const excluirPmo = async (payload: DadosPmoDto): Promise<void> => {
   }
 };
 
+
+
+ export const excluirSemanaOperativa = async (payload: ManutencaoSemanaOperativaModel): Promise<void> => {
+   const data = {
+     idSemanaOperativa: payload.IdSemanaOperativa, 
+      idPMO: payload.IdPMO, 
+      versaoPmoString: payload.VersaoPmoString,
+   };
+
+   await api.post('/PMO/ExcluirSemanaOperativa', data);
+ };
+
+
+ export const carregarAbrirEstudo = async (estudo: AberturaEstudoModel): Promise<EscolhaGabaritoModel> => {
+  try {
+    const response = await api.post<EscolhaGabaritoModel>('/PMO/CarregarAbrirEstudo', estudo);
+    return response.data; 
+  } catch (error: any) {
+    console.error('Erro ao carregar os dados para abrir o estudo:', error);
+    throw error.response?.data?.message || 'Erro desconhecido ao carregar os dados do estudo.';
+  }
+};
+
+export const abrirEstudo = async (dados: AberturaEstudoModel): Promise<void> => {
+  try {    
+    await api.post('/PMO/AbrirEstudo', dados);
+    console.log('Estudo aberto com sucesso.');
+  } catch (error: any) {
+    console.error('Erro ao abrir o estudo:', error);
+    throw error.response?.data?.message || 'Erro desconhecido ao abrir o estudo.';
+  }
+};
 
 

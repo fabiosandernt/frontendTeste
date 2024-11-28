@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Form, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { alterarSemanaOperativa } from '../../services/PmoService';
+import { ManutencaoSemanaOperativaModel} from '../../models/ManutencaoSemanaOperativaModel'
 
 const SemanaOperativaEdit: React.FC = () => {
   const { state } = useLocation();
@@ -13,6 +14,7 @@ const SemanaOperativaEdit: React.FC = () => {
     return d.toISOString().split('T')[0];
   };
 
+  const [idPMO] = useState<number | null>(() => (state ? state.idPMO : null)); // Recupera o IdPMO do estado
   const [semana, setSemana] = useState<{
     idSemanaOperativa: number;
     dataReuniao: string;
@@ -33,8 +35,8 @@ const SemanaOperativaEdit: React.FC = () => {
 
   const [errors, setErrors] = useState<string[]>([]); // Lista de erros
 
-  if (!semana) {
-    console.error('Nenhuma semana operativa foi passada para edição.');
+  if (!semana || !idPMO) {
+    console.error('Dados insuficientes para editar a semana operativa.');
     navigate('/pmo');
     return null;
   }
@@ -47,9 +49,11 @@ const SemanaOperativaEdit: React.FC = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors([]); // Limpa mensagens de erro anteriores
+
     if (semana) {
       const dadosAlteracao = {
         Id: semana.idSemanaOperativa,
+        IdPMO: idPMO, // Inclui o IdPMO no payload
         DataReuniao: semana.dataReuniao,
         DataInicioManutencao: semana.dataInicioManutencao,
         DataFimManutencao: semana.dataFimManutencao,
@@ -63,7 +67,6 @@ const SemanaOperativaEdit: React.FC = () => {
       } catch (error: any) {
         console.error('Erro ao alterar a semana operativa:', error);
         if (Array.isArray(error)) {
-          // Define os erros recebidos
           setErrors(error);
         } else {
           setErrors(['Erro desconhecido ao alterar a semana operativa']);
@@ -100,11 +103,11 @@ const SemanaOperativaEdit: React.FC = () => {
         </Row>
         <Row>
           <Col md={6}>
-            <Form.Group controlId="formDatReuniao">
+            <Form.Group controlId="formDataReuniao">
               <Form.Label>Data da Reunião</Form.Label>
               <Form.Control
                 type="date"
-                name="datReuniao"
+                name="dataReuniao"
                 value={semana.dataReuniao}
                 onChange={handleInputChange}
                 required
@@ -114,11 +117,11 @@ const SemanaOperativaEdit: React.FC = () => {
         </Row>
         <Row>
           <Col md={6}>
-            <Form.Group controlId="formDatInicioManutencao">
+            <Form.Group controlId="formDataInicioManutencao">
               <Form.Label>Início da Manutenção</Form.Label>
               <Form.Control
                 type="date"
-                name="datIniciomanutencao"
+                name="dataInicioManutencao"
                 value={semana.dataInicioManutencao}
                 onChange={handleInputChange}
                 required
@@ -126,11 +129,11 @@ const SemanaOperativaEdit: React.FC = () => {
             </Form.Group>
           </Col>
           <Col md={6}>
-            <Form.Group controlId="formDatFimManutencao">
+            <Form.Group controlId="formDataFimManutencao">
               <Form.Label>Término da Manutenção</Form.Label>
               <Form.Control
                 type="date"
-                name="datFimmanutencao"
+                name="dataFimManutencao"
                 value={semana.dataFimManutencao}
                 onChange={handleInputChange}
                 required

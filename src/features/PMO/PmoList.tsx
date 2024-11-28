@@ -2,10 +2,16 @@ import React, { useState } from 'react';
 import { Table, Button, Form, Row, Col, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { fetchPmos, excluirPmo, incluirPmo } from '../../services/PmoService';
-import { PmoDto, PmoFilter, DadosPmoDto, PMOManterModel, SemanaOperativaModel } from '../../models/PmoDto';
+import { PmoFilter, DadosPmoDto, PMOManterModel, SemanaOperativaModel } from '../../models/PmoDto';
+import { excluirSemanaOperativa } from '../../services/PmoService';
+import { AberturaEstudoModel } from '../../models/AberturaEstudoModel';
+import { carregarAbrirEstudo, abrirEstudo } from '../../services/PmoService';
+import EstudoModal from '../../components/EstudoModal';
+import { EstudoModalProps } from '../../models/EstudoModalProps'; 
 import './Pmo.css';
+import { EscolhaGabaritoModel, SelectListItem } from '../../models/EscolhaGabaritoModel'; // Ajuste o caminho conforme necessário
 
-// Função para converter base64 para Uint8Array
+
 const base64ToUint8Array = (base64: string): Uint8Array => {
   const binaryString = atob(base64);
   const len = binaryString.length;
@@ -17,6 +23,7 @@ const base64ToUint8Array = (base64: string): Uint8Array => {
 };
 
 const PmoList: React.FC = () => {
+  // Estados principais do componente
   const [pmos, setPmos] = useState<PMOManterModel[]>([]);
   const [dadosPmo, setDadosPmo] = useState<Record<number, DadosPmoDto>>({});
   const [loading, setLoading] = useState(false);
@@ -30,78 +37,86 @@ const PmoList: React.FC = () => {
   });
   const [mesesFrente, setMesesFrente] = useState(1);
   const [showSemanasOperativas, setShowSemanasOperativas] = useState(false);
+
+  // Estados relacionados ao modal
+  const [showModal, setShowModal] = useState(false);
+  const [estudosDisponiveis, setEstudosDisponiveis] = useState<Array<{ id: number; nome: string }>>([]);
+  const [dadosEstudo, setDadosEstudo] = useState<AberturaEstudoModel | null>(null);
+
   const navigate = useNavigate();
 
   const currentYear = new Date().getFullYear();
 
-  // Função para buscar PMOs com filtros
   const fetchFilteredPmos = async () => {
     if (!filters.anoReferencia || !filters.mesReferencia) {
       alert('Por favor, selecione um Ano e Mês antes de buscar.');
       return;
     }
-
+  
     setPmos([]);
     setDadosPmo({});
     setBackendMessage(null);
     setLoading(true);
-
+  
     try {
-      const data = await fetchPmos({ ...filters, qtdMesesadiante: mesesFrente });
-      setPmos(data);
-
-      // Mapeia os dados de exclusão por ID de PMO
+      const data: PMOManterModel[] = await fetchPmos({ ...filters, qtdMesesadiante: mesesFrente });
+      console.log("Dados retornados pela API:", data);
+  
       const novosDadosPmo: Record<number, DadosPmoDto> = {};
+      const estudosDisponiveis: Array<{ id: number; nome: string }> = [];
+  
       data.forEach((pmo) => {
+        // Atualiza os dados do PMO
         novosDadosPmo[pmo.id] = {
           idPMO: pmo.id,
-          versaoPMO: base64ToUint8Array(pmo.versaoPmoString || ''), // Converte para Uint8Array
+          versaoPMO: pmo.versao,
         };
+  
+        // Adiciona as semanas operativas ao array de estudos disponíveis
+        pmo.semanasOperativas.forEach((semana) => {
+          estudosDisponiveis.push({
+            id: semana.idSemanaOperativa,
+            nome: semana.nomeSemanaOperativa, // Campo nome que será exibido no select da modal
+          });
+        });
       });
+  
+      setPmos(data);
       setDadosPmo(novosDadosPmo);
+  
+      // Atualiza os estudos disponíveis para o modal
+      setEstudosDisponiveis(estudosDisponiveis);
     } catch (error: any) {
-      if (error.message) {
-        setBackendMessage(error.message);
-      }
+      console.error("Erro ao buscar PMOs:", error);
+      if (error.message) setBackendMessage(error.message);
     } finally {
       setLoading(false);
     }
   };
+  
 
-  // Função para incluir um novo PMO
   const handleIncluirPmo = async () => {
     const { anoReferencia, mesReferencia } = filters;
-  
+
     if (!anoReferencia || !mesReferencia) {
       alert('Por favor, selecione um Ano e Mês antes de incluir o PMO.');
       return;
     }
-  
+
     setLoading(true);
     setBackendMessage(null);
-  
+
     try {
       await incluirPmo(anoReferencia, mesReferencia);
       alert('PMO incluído com sucesso!');
-      fetchFilteredPmos(); // Atualiza a lista
+      fetchFilteredPmos();
     } catch (error: any) {
-      // Exibe apenas a mensagem recebida do backend
       setBackendMessage(typeof error === 'string' ? error : null);
     } finally {
       setLoading(false);
     }
   };
-  
-  
-  
-  
-  
-  
-  
-  
-  
 
-  // Manipulação de filtros
   const handleFilterChange = (e: React.ChangeEvent<any>) => {
     const { name, value } = e.target;
     setFilters((prevFilters) => ({
@@ -110,41 +125,126 @@ const PmoList: React.FC = () => {
     }));
   };
 
-  // Alternar exibição de semanas operativas
   const handleToggleSemanas = () => {
     setShowSemanasOperativas((prev) => !prev);
   };
 
-  const handleEditSemana = (id: number, semana: SemanaOperativaModel) => {
-    const { idSemanaOperativa, dataReuniao, dataInicioManutencao, dataFimManutencao } = semana;
-    const stateToSend = { idSemanaOperativa, dataReuniao, dataInicioManutencao, dataFimManutencao };
 
+  const handleEditSemana = (id: number, semana: SemanaOperativaModel) => {
     navigate(`/pmo/${id}/semana-operativa/edit`, {
-      state: { semana: stateToSend },
+      state: {
+        idPMO: id, // Inclui o IdPMO
+        semana: {
+          idSemanaOperativa: semana.idSemanaOperativa,
+          dataReuniao: semana.dataReuniao,
+          dataInicioManutencao: semana.dataInicioManutencao,
+          dataFimManutencao: semana.dataFimManutencao,
+        },
+      },
     });
   };
+  
+  
 
-  // Função para excluir um PMO
-  const handleDeletePmo = async (idPmo: number) => {
+  const handleAbrirEstudo = async (pmoId: number, idSemanaOperativa: number, versaoPmoString: string) => {
+    setLoading(true);
+    setBackendMessage(null);
+  
+    try {
+      const estudo: AberturaEstudoModel = {
+        idPMO: pmoId,
+        idSemanaOperativa: idSemanaOperativa,
+        versaoPmoString: versaoPmoString,
+      };
+  
+      // Chama a API para carregar os dados do estudo
+      const dadosCarregados: EscolhaGabaritoModel = await carregarAbrirEstudo(estudo);
+  
+      console.log('Estudo carregado com sucesso:', dadosCarregados);
+  
+      // Mapeia os dados para o formato esperado
+      const estudos = dadosCarregados.estudos.map((item: SelectListItem) => ({
+        id: typeof item.value === 'number' ? item.value : parseInt(item.value as string, 10),
+        nome: item.text,
+      }));
+      
+  
+      // Atualiza o estado com os dados mapeados
+      setDadosEstudo({
+        idPMO: pmoId,
+        idSemanaOperativa: idSemanaOperativa,
+        versaoPmoString: versaoPmoString,
+      });
+      setEstudosDisponiveis(estudos);
+      setShowModal(true);
+    } catch (error: any) {
+      console.error('Erro ao carregar os dados para abrir o estudo:', error);
+      alert(error.message || 'Erro ao carregar os dados do estudo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  
+  
+
+  
+  
+
+  const handleExcluirSemana = async (pmoId: number, idSemanaOperativa: number) => {
+    if (!window.confirm(`Deseja realmente excluir a Semana Operativa ID: ${idSemanaOperativa}?`)) return;
+  
+    try {
+      setLoading(true);
+      await excluirSemanaOperativa({
+        IdSemanaOperativa: idSemanaOperativa,
+        IdPMO: pmoId,
+        VersaoPmoString: dadosPmo[pmoId]?.versaoPMO || '',
+      });
+  
+      setPmos((prevPmos) =>
+        prevPmos.map((pmo) =>
+          pmo.id === pmoId
+            ? {
+                ...pmo,
+                semanasOperativas: pmo.semanasOperativas.filter(
+                  (semana) => semana.idSemanaOperativa !== idSemanaOperativa
+                ),
+              }
+            : pmo
+        )
+      );
+      alert('Semana Operativa excluída com sucesso!');
+    } catch (error: any) {
+      alert(error.message || 'Erro ao excluir a Semana Operativa.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+
+  const handleDeletePmo = async (id: number) => {
     if (!window.confirm('Tem certeza que deseja excluir este PMO?')) return;
 
     setLoading(true);
     setBackendMessage(null);
 
     try {
-      const dados = dadosPmo[idPmo];
+      const dados = dadosPmo[id];
       if (!dados) throw new Error('Dados para exclusão não encontrados.');
 
-      await excluirPmo(dados); // Envia o DTO no formato esperado
-      setPmos((prevPmos) => prevPmos.filter((pmo) => pmo.id !== idPmo)); // Atualiza a lista localmente
+      console.log("Payload enviado para exclusão:", dados);
+
+      await excluirPmo(dados);
+
+      setPmos((prevPmos) => prevPmos.filter((pmo) => pmo.id !== id));
       setDadosPmo((prevDados) => {
-        const { [idPmo]: _, ...rest } = prevDados;
+        const { [id]: _, ...rest } = prevDados;
         return rest;
       });
     } catch (error: any) {
-      if (error.message) {
-        setBackendMessage(error.message);
-      }
+      console.error("Erro ao excluir PMO:", error);
+      if (error.message) setBackendMessage(error.message);
     } finally {
       setLoading(false);
     }
@@ -214,7 +314,7 @@ const PmoList: React.FC = () => {
           Incluir PMO
         </Button>
       </Form>
-
+  
       <div className="table-responsive mt-4">
         {backendMessage && <p className="text-center text-danger">{backendMessage}</p>}
         {pmos.length > 0 &&
@@ -250,6 +350,26 @@ const PmoList: React.FC = () => {
                           >
                             Editar
                           </Button>
+                          <Button
+                            className="ml-2 open-study-button"
+                            variant="info"
+                            onClick={() =>
+                              handleAbrirEstudo(
+                                pmo.id,
+                                semana.idSemanaOperativa,
+                                dadosPmo[pmo.id]?.versaoPMO || ''
+                              )
+                            }
+                          >
+                            Abrir Estudo
+                          </Button>
+                          <Button
+                            className="ml-2 delete-week-button"
+                            variant="danger"
+                            onClick={() => handleExcluirSemana(pmo.id, semana.idSemanaOperativa)}
+                          >
+                            Excluir Semana
+                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -266,8 +386,31 @@ const PmoList: React.FC = () => {
             </div>
           ))}
       </div>
+  
+      {/* Modal de Abertura de Estudo */}
+      <EstudoModal
+  show={showModal}
+  onHide={() => setShowModal(false)}
+  onConfirm={(estudoId, isPadrao) => {
+    setShowModal(false);
+    console.log('Confirmado:', { estudoId, isPadrao });
+    if (dadosEstudo) {
+      abrirEstudo({
+        ...dadosEstudo,
+        idSemanaOperativa: isPadrao ? null : estudoId,
+      })
+        .then(() => alert('Estudo aberto com sucesso!'))
+        .catch((error) => alert('Erro ao abrir o estudo: ' + error.message));
+    }
+  }}
+  estudos={estudosDisponiveis} // Certifique-se de que está passando a lista aqui
+/>
+
+
+
     </div>
   );
+  
 };
 
 export default PmoList;

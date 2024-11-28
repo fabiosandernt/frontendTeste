@@ -3,7 +3,7 @@ export interface PmoDto {
   anoReferencia: number;
   mesReferencia: number;
   qtdMesesadiante?: number;
-  verControleconcorrencia: string; // Base64 do controle de concorrência
+  versao: Uint8Array; // Base64 do controle de concorrência
   tbSemanaoperativas: SemanaOperativaDto[];
 }
 // Novo DTO para uso paralelo ao PMOManterModel
@@ -13,8 +13,7 @@ export interface PMOManterModel {
   mesReferencia: number; // Mês de referência
   anoReferencia: number; // Ano de referência
   quantidadeMesesAdiante?: number; // Meses à frente para estudo (opcional)
-  versao: Uint8Array; // Controle de concorrência em formato binário
-  versaoPmoString: string; // Versão do PMO em formato string
+  versao: string; // Controle de concorrência em formato binário
   nomeMesReferencia: string; // Nome do mês de referência
 }
 export interface SemanaOperativaModel {
@@ -26,6 +25,7 @@ export interface SemanaOperativaModel {
   dataInicioManutencao: string; // Data de início da manutenção
   dataFimManutencao: string; // Data de fim da manutenção
   numeroRevisao?: number; // Número da revisão (opcional)
+  
 }
 export interface PmoFilter {
   anoReferencia?: number;
@@ -49,5 +49,5 @@ export interface SemanaOperativaDto {
 
 export interface DadosPmoDto {
   idPMO: number;
-  versaoPMO: Uint8Array; // Representação do controle de concorrência em formato Uint8Array
+  versaoPMO: string; // Representação do controle de concorrência em formato Uint8Array
 }
