@@ -12,46 +12,59 @@ const EstudoModal: React.FC<EstudoModalProps> = ({ show, onHide, onConfirm, estu
   const [selectedEstudo, setSelectedEstudo] = useState<number | null>(null);
   const [isPadrao, setIsPadrao] = useState(true);
 
+  const handleConfirm = () => {
+    onConfirm(isPadrao ? null : selectedEstudo, isPadrao);
+  };
+
+  const isConfirmDisabled = !isPadrao && selectedEstudo === null;
+
   return (
-    <Modal show={show} onHide={onHide}>
+    <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
         <Modal.Title>Abertura de Estudo</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <div>
-          <input
-            type="radio"
-            id="padrao"
-            name="isPadrao"
-            checked={isPadrao}
-            onChange={() => setIsPadrao(true)}
-          />
-          <label htmlFor="padrao">Padrão</label>
-        </div>
-        <div>
-          <input
-            type="radio"
-            id="estudo"
-            name="isPadrao"
-            checked={!isPadrao}
-            onChange={() => setIsPadrao(false)}
-          />
-          <label htmlFor="estudo">Estudo:</label>
-          <select
-            disabled={isPadrao}
-            value={selectedEstudo || ''}
-            onChange={(e) => setSelectedEstudo(Number(e.target.value))}
-          >
-            <option value="" disabled>
-              Selecione um estudo
-            </option>
-            {estudos.map((estudo) => (
-              <option key={estudo.id} value={estudo.id}>
-                {estudo.nome}
+        <Form>
+          <Form.Group>
+            <Form.Check
+              type="radio"
+              id="padrao"
+              label="Padrão"
+              name="isPadrao"
+              checked={isPadrao}
+              onChange={() => setIsPadrao(true)}
+            />
+          </Form.Group>
+          <Form.Group>
+            <Form.Check
+              type="radio"
+              id="estudo"
+              label="Estudo"
+              name="isPadrao"
+              checked={!isPadrao}
+              onChange={() => setIsPadrao(false)}
+            />
+            <Form.Control
+              as="select"
+              disabled={isPadrao}
+              value={selectedEstudo || ''}
+              onChange={(e) => setSelectedEstudo(Number(e.target.value))}
+              className="mt-2"
+            >
+              <option value="" disabled>
+                Selecione um estudo
               </option>
-            ))}
-          </select>
-        </div>
+              {estudos.map((estudo) => (
+                <option key={estudo.id} value={estudo.id}>
+                  {estudo.nome}
+                </option>
+              ))}
+            </Form.Control>
+          </Form.Group>
+        </Form>
+        {!isPadrao && selectedEstudo === null && (
+          <p className="text-danger mt-2">Selecione um estudo para continuar.</p>
+        )}
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide}>
@@ -59,7 +72,8 @@ const EstudoModal: React.FC<EstudoModalProps> = ({ show, onHide, onConfirm, estu
         </Button>
         <Button
           variant="primary"
-          onClick={() => onConfirm(selectedEstudo, isPadrao)}
+          onClick={handleConfirm}
+          disabled={isConfirmDisabled}
         >
           Confirmar
         </Button>

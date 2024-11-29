@@ -4,7 +4,6 @@ import { Container } from 'react-bootstrap';
 import SideBar from './components/SideBar';
 import HomePage from './features/Home/HomePage';
 import InsumosPage from './features/Insumos/InsumosPage';
-import InsumoEdit from './features/Insumos/InsumoEdit';
 import PmoPage from './features/PMO/PmoPage';
 import SemanaOperativaEdit from './features/PMO/SemanaOperativaEdit'; // Importação do componente de edição
 import LoadingIndicator from './components/LoadingIndicator'; // Componente de carregamento
@@ -36,8 +35,7 @@ const App: React.FC = () => {
             <Routes>
               {/* Rotas Configuradas */}
               <Route path="/" element={<HomePage />} />
-              <Route path="/insumos" element={<InsumosPage />} />
-              <Route path="/insumos/editar/:id" element={<InsumoEdit />} />
+              <Route path="/insumos" element={<InsumosPage />} />              
               <Route path="/pmo" element={<PmoPage />} />
               {/* Nova Rota para Editar Semana Operativa */}
               <Route path="/pmo/:idPmo/semana-operativa/edit" element={<SemanaOperativaEdit />} />

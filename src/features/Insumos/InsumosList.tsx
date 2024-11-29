@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState } from 'react';
 import { Table, Button, Form, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom'; // Importa useNavigate para redirecionamento
 import PaginationComponent from '../../components/PaginationComponent';
 import { fetchInsumos } from '../../services/InsumoService';
-import { InsumoDto } from '../../models/InsumoDto';
+import { VisualizarInsumoModel } from '../../models/VisualizarInsumoModel';
 import './Insumos.css';
 
 const InsumosList: React.FC = () => {
-  const [insumos, setInsumos] = useState<InsumoDto[]>([]);
+  const [insumos, setInsumos] = useState<VisualizarInsumoModel[]>([]);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
-    NomInsumopmo: '',
-    SglInsumo: '',
-    TipInsumopmo: '',
+    Nome: '',        // Nome do insumo
+    SglInsumo: '',   // Sigla do insumo
+    TipInsumopmo: '', // Tipo do insumo
     Limit: 10,
     Offset: 0,
     Sort: '',
@@ -37,22 +37,19 @@ const InsumosList: React.FC = () => {
       });
   };
 
-  useEffect(() => {
-    fetchFilteredInsumos();
-  }, [filters]);
-
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFilterChange = (e: React.ChangeEvent<any>) => {
     const { name, value } = e.target;
     setFilters(prevFilters => ({ ...prevFilters, [name]: value }));
   };
+  
 
   const handlePageChange = (newPage: number) => {
     const newOffset = (newPage - 1) * filters.Limit;
     setFilters(prevFilters => ({ ...prevFilters, Offset: newOffset }));
     setCurrentPage(newPage);
+    fetchFilteredInsumos(); // Recarrega os dados ao mudar de página
   };
 
-  // Função para redirecionar para a tela de edição de insumo e exibir o ID
   const handleEdit = (id: number) => {
     console.log("ID do insumo:", id); // Adiciona o console.log para mostrar o ID
     navigate(`/insumos/editar/${id}`); // Redireciona para a tela de edição passando o ID
@@ -73,8 +70,8 @@ const InsumosList: React.FC = () => {
               <Form.Label>Nome</Form.Label>
               <Form.Control
                 type="text"
-                name="NomInsumopmo"
-                value={filters.NomInsumopmo}
+                name="Nome"
+                value={filters.Nome}
                 onChange={handleFilterChange}
                 placeholder="Nome do Insumo"
               />
@@ -125,14 +122,14 @@ const InsumosList: React.FC = () => {
           </thead>
           <tbody>
             {insumos.map(insumo => (
-              <tr key={insumo.idInsumopmo}>
-                <td>{insumo.numOrdemexibicao}</td>
-                <td>{insumo.tipInsumopmo === 'E' ? 'Estruturado' : 'Não Estruturado'}</td>
-                <td>{insumo.nomInsumopmo}</td>
-                <td>{insumo.sglInsumo}</td>
+              <tr key={insumo.id}>
+                <td>{insumo.ordemExibicao}</td>
+                <td>{insumo.tipoInsumo === 'E' ? 'Estruturado' : 'Não Estruturado'}</td>
+                <td>{insumo.nome}</td>
+                <td>{insumo.siglaInsumo}</td>
                 <td>
-                  <Button className="edit-button" onClick={() => handleEdit(insumo.idInsumopmo)}>Editar</Button>{' '}
-                  <Button variant="danger" onClick={() => handleDelete(insumo.idInsumopmo)}>Excluir</Button>
+                  <Button className="edit-button" onClick={() => handleEdit(insumo.id)}>Editar</Button>{' '}
+                  <Button variant="danger" onClick={() => handleDelete(insumo.id)}>Excluir</Button>
                 </td>
               </tr>
             ))}
