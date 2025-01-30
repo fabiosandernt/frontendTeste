@@ -1,13 +1,18 @@
 import React from 'react';
-import { Container } from 'react-bootstrap';
 import InsumosList from './InsumosList';
+import { Layout, Typography } from 'antd';
+
+const { Content } = Layout;
+const { Title } = Typography;
 
 const InsumosPage: React.FC = () => {
   return (
-    <Container>
-      <h2>Insumos</h2>
-      <InsumosList />
-    </Container>
+    <Layout>
+      <Content >
+        <Title level={2}>Insumos</Title>
+        <InsumosList />
+      </Content>
+    </Layout>
   );
 };
 
